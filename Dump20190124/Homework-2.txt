@@ -1,0 +1,76 @@
+use lesson1;
+RENAME TABLE `Countries` to `countries`;
+RENAME TABLE `Regions` to `regions`;
+RENAME TABLE `District` to `districts`;
+RENAME TABLE `Cities` to `cities`;
+ALTER TABLE `countries` CHANGE COLUMN `name` `title` VARCHAR(150) NOT NULL;
+
+ALTER TABLE `regions` CHANGE COLUMN `name` `title` VARCHAR(150) NOT NULL;
+ALTER TABLE `regions` CHANGE COLUMN `country` `country_id` INT NOT NULL;
+ALTER TABLE `regions` DROP FOREIGN KEY `region_country`;
+ALTER TABLE `regions` 
+ADD CONSTRAINT `region_country` FOREIGN KEY (`country_id`) 
+REFERENCES `countries`(`id`)
+ON UPDATE CASCADE
+ON DELETE RESTRICT;
+CREATE INDEX `title` ON `regions`(`title`);
+
+ALTER TABLE `cities` CHANGE COLUMN `name` `title` VARCHAR(150) NOT NULL;
+CREATE INDEX `title` ON `cities`(`title`);
+ALTER TABLE `cities` CHANGE COLUMN `region` `region_id` INT NOT NULL;
+ALTER TABLE `cities` DROP FOREIGN KEY `city_district`;
+ALTER TABLE `cities` DROP COLUMN `district`;
+ALTER TABLE `cities` ADD COLUMN `country_id` INT NOT NULL AFTER `id`;
+ALTER TABLE `cities` ADD COLUMN `important` TINYINT(1) NOT NULL AFTER `country_id`;
+
+ALTER TABLE `districts` DROP FOREIGN KEY `district_region`;
+ALTER TABLE `districts` DROP INDEX `district_region_idx`;
+ALTER TABLE `regions` DROP FOREIGN KEY `region_country`;
+ALTER TABLE `regions` DROP INDEX `region_country_idx`;
+ALTER TABLE `countries` DROP INDEX `name_UNIQUE`;
+ALTER TABLE `cities` DROP FOREIGN KEY `city_region`;
+ALTER TABLE `cities` DROP INDEX `city_region_idx`;
+
+CREATE INDEX `countries` ON `countries`(`title`);
+
+ALTER TABLE `districts` CHANGE COLUMN `name` `title` VARCHAR(150) NOT NULL;
+CREATE INDEX `title` ON `districts`(`title`);
+
+ALTER TABLE `countries` RENAME INDEX `countries` TO `title`;
+
+ALTER TABLE `regions` 
+ADD CONSTRAINT `region_country` FOREIGN KEY (`country_id`) 
+REFERENCES `countries`(`id`)
+ON UPDATE CASCADE
+ON DELETE RESTRICT;
+
+ALTER TABLE `districts` CHANGE COLUMN `region` `region_id` INT NOT NULL;
+ALTER TABLE `districts` 
+ADD CONSTRAINT `district_region` FOREIGN KEY (`region_id`) 
+REFERENCES `regions`(`id`)
+ON UPDATE CASCADE
+ON DELETE RESTRICT;
+
+ALTER TABLE `cities` 
+ADD CONSTRAINT `city_region` FOREIGN KEY (`region_id`) 
+REFERENCES `regions`(`id`)
+ON UPDATE CASCADE
+ON DELETE RESTRICT;
+
+TRUNCATE TABLE `cities`;
+
+ALTER TABLE `cities` 
+ADD CONSTRAINT `city_country` FOREIGN KEY (`country_id`) 
+REFERENCES `countries`(`id`)
+ON UPDATE CASCADE
+ON DELETE RESTRICT;
+
+ALTER TABLE `cities` ADD COLUMN `district_id` INT NOT NULL AFTER `title`;
+
+ALTER TABLE `cities` 
+ADD CONSTRAINT `city_district` FOREIGN KEY (`district_id`) 
+REFERENCES `districts`(`id`)
+ON UPDATE CASCADE
+ON DELETE RESTRICT;
+
+ALTER TABLE `cities` CHANGE COLUMN `district_id` `district_id` INT;
