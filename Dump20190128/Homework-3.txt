@@ -1,0 +1,71 @@
+use lesson1;
+
+# 1. Сделать запрос, в котором мы выберем все данные о городе – регион, страна.
+SELECT `cities`.`title`, `cities`.`important`, `countries`.`title` AS 'country', `regions`.`title` AS 'region', `districts`.`title` AS 'district'
+FROM `cities`
+LEFT JOIN `countries`
+ON `countries`.`id` = `cities`.`country_id`
+LEFT JOIN `regions`
+ON `regions`.`id` = `cities`.`region_id`
+LEFT JOIN `districts`
+ON `districts`.`id` = `cities`.`district_id`;
+
+# 2. Выбрать все города из Московской области.
+# Наполение данными
+INSERT INTO `lesson1`.`regions` (`title`, `country_id`) VALUES ('Moscow', '1');
+INSERT INTO `lesson1`.`regions` (`title`, `country_id`) VALUES ('Omsk region', '1');
+INSERT INTO `lesson1`.`regions` (`title`, `country_id`) VALUES ('Perm region', '1');
+INSERT INTO `lesson1`.`regions` (`title`, `country_id`) VALUES ('Samara region', '1');
+INSERT INTO `lesson1`.`regions` (`title`, `country_id`) VALUES ('Ulyanovsk region', '1');
+INSERT INTO `lesson1`.`districts` (`title`, `region_id`) VALUES ('Privolzhskii district', '1');
+INSERT INTO `lesson1`.`cities` (`country_id`, `important`, `title`, `region_id`) VALUES ('1', '0', 'Podolsk', '2');
+INSERT INTO `lesson1`.`cities` (`country_id`, `important`, `title`, `region_id`) VALUES ('1', '0', 'Chekhov', '2');
+INSERT INTO `lesson1`.`cities` (`country_id`, `important`, `title`, `region_id`) VALUES ('1', '0', 'Troick', '2');
+# Простой запрос (вывод значений в виде первичного ключа)
+SELECT * FROM `cities` WHERE `region_id` = (SELECT `id` FROM `regions` WHERE `title` LIKE 'Moscow');
+# Более информативный вариант данных
+SELECT `cities`.`title`, `cities`.`important`, `countries`.`title` AS 'country', `regions`.`title` AS 'region', `districts`.`title` AS 'district'
+FROM `cities`
+LEFT JOIN `countries`
+ON `countries`.`id` = `cities`.`country_id`
+LEFT JOIN `regions`
+ON `regions`.`id` = `cities`.`region_id`
+LEFT JOIN `districts`
+ON `districts`.`id` = `cities`.`district_id`
+WHERE `cities`.`region_id` = (SELECT `id` FROM `regions` WHERE `title` LIKE 'Moscow');
+
+# Создаем БД сотрудников
+CREATE SCHEMA IF NOT EXISTS `lesson3` CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+use lesson3;
+# Создаем таблицы
+CREATE TABLE IF NOT EXISTS `depart` (
+`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+`name` VARCHAR(150) NOT NULL,
+`count` INT DEFAULT 0,
+`head_id` INT
+);
+
+CREATE TABLE IF NOT EXISTS `shtat` (
+`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+`name` VARCHAR(50) NOT NULL,
+`lastname` VARCHAR(50) NOT NULL,
+`otdel` INT,
+`zp` INT,
+`position` VARCHAR(150)
+);
+
+# Наполнение таблиц данными
+INSERT INTO `depart` (`name`) VALUES ('Бухгалтерия'), ('IT'), ('HR'), ('RnD');
+INSERT INTO `shtat` (`name`,`lastname`,`otdel`,`zp`) 
+VALUES
+('Андрей','Боголюбов',1,50000),
+('Василий','Теркин',1,60000),
+('Борис','Кошкин',1,55000),
+('Дмитрий','Михайлов',2,120000),
+('Алексей','Хитров',2,170000),
+('Станислав','Бурчак',3,146000),
+('Павел','Рукавишников',3,70000),
+('Дмитрий','Михеев',3,160000),
+('Антон','Качанов',4,190000),
+('Александр','Дудь',4,130000);
+
