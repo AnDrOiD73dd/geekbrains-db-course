@@ -1,6 +1,6 @@
 use lesson1;
 
-# 1. Сделать запрос, в котором мы выберем все данные о городе – регион, страна.
+# Сделать запрос, в котором мы выберем все данные о городе – регион, страна.
 SELECT `cities`.`title`, `cities`.`important`, `countries`.`title` AS 'country', `regions`.`title` AS 'region', `districts`.`title` AS 'district'
 FROM `cities`
 LEFT JOIN `countries`
@@ -10,7 +10,7 @@ ON `regions`.`id` = `cities`.`region_id`
 LEFT JOIN `districts`
 ON `districts`.`id` = `cities`.`district_id`;
 
-# 2. Выбрать все города из Московской области.
+# Выбрать все города из Московской области.
 # Наполение данными
 INSERT INTO `lesson1`.`regions` (`title`, `country_id`) VALUES ('Moscow', '1');
 INSERT INTO `lesson1`.`regions` (`title`, `country_id`) VALUES ('Omsk region', '1');
@@ -34,6 +34,8 @@ LEFT JOIN `districts`
 ON `districts`.`id` = `cities`.`district_id`
 WHERE `cities`.`region_id` = (SELECT `id` FROM `regions` WHERE `title` LIKE 'Moscow');
 
+
+# ============================================================================================
 # Создаем БД сотрудников
 CREATE SCHEMA IF NOT EXISTS `lesson3` CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 use lesson3;
@@ -69,3 +71,29 @@ VALUES
 ('Антон','Качанов',4,190000),
 ('Александр','Дудь',4,130000);
 
+# Выбрать среднюю зарплату по отделам.
+SELECT `depart`.`name` AS 'department', AVG(`zp`) AS `Ср. ЗП`
+FROM `shtat`
+LEFT JOIN `depart`
+ON `depart`.`id` = `shtat`.`otdel`
+GROUP BY `otdel`;
+
+# Выбрать максимальную зарплату у сотрудника.
+SELECT `id`, `name`, `lastname`, `otdel`, `zp` FROM `shtat` ORDER BY `zp` DESC LIMIT 1;
+
+# Удалить одного сотрудника, у которого максимальная зарплата.
+DELETE FROM `shtat` WHERE id = (SELECT `id` FROM (select * from `shtat`) as tmp_shtat ORDER BY `zp` DESC LIMIT 1);
+
+# Посчитать количество сотрудников во всех отделах.
+SELECT `depart`.`name` AS 'department', COUNT(*) AS `кол-во сотрудников`
+FROM `shtat`
+LEFT JOIN `depart`
+ON `depart`.`id` = `shtat`.`otdel`
+GROUP BY `otdel`;
+
+# Найти количество сотрудников в отделах и посмотреть, сколько всего денег получает отдел.
+SELECT `depart`.`name` AS 'department', COUNT(*) AS `кол-во сотрудников`, SUM(`shtat`.`zp`) AS 'ФОТ'
+FROM `shtat`
+LEFT JOIN `depart`
+ON `depart`.`id` = `shtat`.`otdel`
+GROUP BY `otdel`;

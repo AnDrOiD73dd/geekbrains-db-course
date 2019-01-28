@@ -39,7 +39,7 @@ CREATE TABLE `shtat` (
 
 LOCK TABLES `shtat` WRITE;
 /*!40000 ALTER TABLE `shtat` DISABLE KEYS */;
-INSERT INTO `shtat` VALUES (1,'Андрей','Боголюбов',1,50000,NULL),(2,'Василий','Теркин',1,60000,NULL),(3,'Борис','Кошкин',1,55000,NULL),(4,'Дмитрий','Михайлов',2,120000,NULL),(5,'Алексей','Хитров',2,170000,NULL),(6,'Станислав','Бурчак',3,146000,NULL),(7,'Павел','Рукавишников',3,70000,NULL),(8,'Дмитрий','Михеев',3,160000,NULL),(9,'Антон','Качанов',4,190000,NULL),(10,'Александр','Дудь',4,130000,NULL);
+INSERT INTO `shtat` VALUES (1,'Андрей','Боголюбов',1,50000,NULL),(2,'Василий','Теркин',1,60000,NULL),(3,'Борис','Кошкин',1,55000,NULL),(4,'Дмитрий','Михайлов',2,120000,NULL),(5,'Алексей','Хитров',2,170000,NULL),(6,'Станислав','Бурчак',3,146000,NULL),(7,'Павел','Рукавишников',3,70000,NULL),(8,'Дмитрий','Михеев',3,160000,NULL),(10,'Александр','Дудь',4,130000,NULL);
 /*!40000 ALTER TABLE `shtat` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -52,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-01-28 15:57:37
+-- Dump completed on 2019-01-28 16:28:39
