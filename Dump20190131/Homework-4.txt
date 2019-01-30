@@ -1,0 +1,89 @@
+use lesson3;
+
+# Добавляем данные в БД
+UPDATE `shtat` SET `position` = 'Event manager' WHERE (`id` = '1');
+UPDATE `shtat` SET `position` = 'Junior QA' WHERE (`id` = '2');
+UPDATE `shtat` SET `position` = 'PR' WHERE (`id` = '3');
+UPDATE `shtat` SET `position` = 'QA' WHERE (`id` = '4');
+UPDATE `shtat` SET `position` = 'Project manager' WHERE (`id` = '5');
+UPDATE `shtat` SET `position` = 'Embedded developer' WHERE (`id` = '6');
+UPDATE `shtat` SET `position` = 'Backend developer' WHERE (`id` = '7');
+UPDATE `shtat` SET `position` = 'Frontend developer' WHERE (`id` = '8');
+UPDATE `shtat` SET `position` = 'HR director' WHERE (`id` = '10');
+
+# Создать на основе запросов, которые вы сделали в ДЗ к уроку 3, VIEW.
+## Суммарная ЗП всех сотрудников по отделам и кол-во сотрудников в отделе
+CREATE VIEW `department_salary_and_people_count` AS
+SELECT `depart`.`name` AS 'department', COUNT(*) AS `кол-во сотрудников`, SUM(`shtat`.`zp`) AS 'ФОТ'
+FROM `shtat`
+LEFT JOIN `depart`
+ON `depart`.`id` = `shtat`.`otdel`
+GROUP BY `otdel`;
+
+## Средняя ЗП по отделам
+CREATE VIEW `department_average_salary` AS
+SELECT `depart`.`name` AS 'department', AVG(`zp`) AS `Ср. ЗП`
+FROM `shtat`
+LEFT JOIN `depart`
+ON `depart`.`id` = `shtat`.`otdel`
+GROUP BY `otdel`;
+
+## Все сотрудники
+CREATE VIEW `all_employees` AS
+SELECT  `shtat`.`id`, `shtat`.`name`,  `shtat`.`lastname`,  `depart`.`name` AS 'department',  `shtat`.`zp` AS 'salary', `shtat`.`position`
+FROM `shtat`
+LEFT JOIN `depart`
+ON `depart`.`id` = `shtat`.`otdel`;
+
+# Создать функцию, которая найдет менеджера по имени и фамилии.
+delimiter $$
+CREATE PROCEDURE `get_manager` (firstname VARCHAR(50), lastname VARCHAR(50)) 
+BEGIN
+SELECT * FROM `shtat` WHERE `name` = firstname AND `lastname` = lastname AND `position` LIKE '%manager%';
+END
+$$
+delimiter $$
+
+## Проверяем результат
+CALL get_manager('Алексей', 'Хитров');
+
+# Создать триггер, который при добавлении нового сотрудника будет выплачивать ему вступительный бонус, занося запись в таблицу salary.
+
+## Создадим таблицу salaries
+CREATE TABLE IF NOT EXISTS `salaries` (
+`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+`emp_id` int(11) NOT NULL,
+`salary` int(11) NOT NULL,
+`from_date` DATE NOT NULL,
+`to_date` DATE NOT NULL
+);
+
+## Добавим CONSTRAINT
+ALTER TABLE `salaries` 
+ADD CONSTRAINT `salary_shtat` FOREIGN KEY (`emp_id`) 
+REFERENCES `shtat`(`id`)
+ON UPDATE CASCADE
+ON DELETE RESTRICT;
+
+## Вставим данные
+INSERT INTO `salaries` (`emp_id`, `salary`, `from_date`, `to_date`) VALUES 
+(1,60117,'1986-06-26','1987-06-26'),(1,62102,'1987-06-26','1988-06-25'),(1,66074,'1988-06-25','1989-06-25'),
+(1,66596,'1989-06-25','1990-06-25'),(1,66961,'1990-06-25','1991-06-25'),(1,71046,'1991-06-25','1992-06-24'),(1,74333,'1992-06-24','1993-06-24'),
+(1,75286,'1993-06-24','1994-06-24'),(1,75994,'1994-06-24','1995-06-24'),(1,76884,'1995-06-24','1996-06-23'),(1,80013,'1996-06-23','1997-06-23'),
+(1,81025,'1997-06-23','1998-06-23'),(1,81097,'1998-06-23','1999-06-23'),(1,84917,'1999-06-23','2000-06-22'),(1,85112,'2000-06-22','2001-06-22'),
+(1,85097,'2001-06-22','2002-06-22'),(1,88958,'2002-06-22','9999-01-01'),(2,65828,'1996-08-03','1997-08-03'),(2,65909,'1997-08-03','1998-08-03'),
+(2,67534,'1998-08-03','1999-08-03'),(2,69366,'1999-08-03','2000-08-02'),(2,71963,'2000-08-02','2001-08-02'),(2,72527,'2001-08-02','9999-01-01'),
+(3,40006,'1995-12-03','1996-12-02'),(3,43616,'1996-12-02','1997-12-02'),(3,43466,'1997-12-02','1998-12-02'),(3,43636,'1998-12-02','1999-12-02'),
+(3,43478,'1999-12-02','2000-12-01'),(3,43699,'2000-12-01','2001-12-01'),(3,43311,'2001-12-01','9999-01-01'),(4,40054,'1986-12-01','1987-12-01');
+
+## Добавляем NOT NULL в колонку zp, чтобы в триггере не было ошибки если поле zp не заполнено
+ALTER TABLE `shtat` CHANGE COLUMN `zp` `zp` INT(11) NOT NULL;
+
+## Сам триггер
+CREATE TRIGGER `lifting_allowance`
+AFTER INSERT ON `shtat`
+FOR EACH ROW
+INSERT INTO `salaries` (`emp_id`, `salary`, `from_date`, `to_date`) VALUES (NEW.id, NEW.zp, curdate(), curdate());
+
+## Проверяем триггер
+INSERT INTO `lesson3`.`shtat` (`name`, `lastname`, `otdel`, `zp`, `position`) VALUES ('Владимир', 'Капустин', '2', '120000', 'iOS developer');
