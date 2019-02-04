@@ -1,0 +1,77 @@
+use lesson3;
+
+# корректирование данных
+UPDATE `shtat` SET `otdel` = '3' WHERE (`id` = '10');
+UPDATE `shtat` SET `otdel` = '4' WHERE (`id` = '5');
+UPDATE `shtat` SET `otdel` = '4' WHERE (`id` = '6');
+UPDATE `shtat` SET `otdel` = '4' WHERE (`id` = '7');
+UPDATE `shtat` SET `otdel` = '4' WHERE (`id` = '8');
+UPDATE `shtat` SET `otdel` = '4' WHERE (`id` = '11');
+
+# выключаем автокоммиты
+SET AUTOCOMMIT = 0;
+
+# выставляем нужный уровень изоляций
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+# создаем транзакцию
+## выплачиваем премию Backend разработчику
+BEGIN;
+SELECT @emp_id := (SELECT `id` FROM `shtat` WHERE `position` LIKE '%Backend%' LIMIT 1);
+SELECT @emp_zp := (SELECT `zp` FROM `shtat` WHERE `id` = @emp_id);
+INSERT INTO `salaries` 
+(`emp_id`,`salary`,`from_date`,`to_date`) 
+VALUES (@emp_id, @emp_zp * 0.15, curdate(), curdate());
+COMMIT;
+
+## Назначаем главу HR
+BEGIN;
+SELECT @emp_id := (SELECT `id` FROM `shtat` WHERE `position` LIKE '%HR%' LIMIT 1);
+SELECT @dep_id := (SELECT `id` FROM `depart` WHERE `name` LIKE '%HR%' LIMIT 1);
+UPDATE `depart` SET `head_id` = @emp_id WHERE (`id` = @dep_id);
+COMMIT;
+
+## Назначаем сотруднику с минимальной ЗП - среднюю ЗП
+BEGIN;
+SELECT @avg_zp := (SELECT AVG(`zp`) from `shtat`);
+SELECT @min_zp := (SELECT MIN(`zp`) FROM `shtat`);
+SELECT @emp_id := (SELECT `id` FROM `shtat` WHERE `zp` = @min_zp LIMIT 1);
+UPDATE `shtat` SET `zp` = @avg_zp WHERE (`id` = @emp_id);
+COMMIT;
+
+
+# EXPLAIN
+EXPLAIN SELECT `salary` FROM `salaries` WHERE `emp_id` = 1;
+# id	select_type	table		partitions	type	possible_keys	key				key_len		ref		rows	filtered	Extra
+# 1		SIMPLE		salaries				ref		salary_shtat	salary_shtat	4			const	17		100.00	
+
+
+EXPLAIN SELECT `emp_id`, COUNT(*) AS 'count' FROM `salaries` GROUP BY `emp_id` ORDER BY count DESC LIMIT 1;
+# id	select_type	table		partitions		type	possible_keys	key				key_len		ref	rows	filtered	Extra
+# 1		SIMPLE		salaries					index	salary_shtat	salary_shtat	4				32		100.00		Using index; Using temporary; Using filesort
+
+
+use lesson1;
+EXPLAIN SELECT * FROM `cities` WHERE `region_id` = (SELECT `id` FROM `regions` WHERE `title` LIKE 'Moscow');
+# id	select_type		table		partitions	type	possible_keys	key				key_len		ref		rows	filtered	Extra
+# 1		PRIMARY			cities					ref		city_region		city_region		4			const	3		100.00		Using where
+# 2		SUBQUERY		regions					range	title			title			602					1		100.00		Using where; Using index
+
+
+use lesson3;
+EXPLAIN SELECT * FROM `shtat` WHERE `position` LIKE 'iOS developer';
+# id	select_type	table	partitions	type	possible_keys	key		key_len		ref		rows	filtered	Extra
+# 1		SIMPLE		shtat				ALL													10		11.11		Using where
+CREATE INDEX `shtat_position` ON `shtat`(`position`);
+EXPLAIN SELECT * FROM `shtat` WHERE `position` LIKE 'iOS developer';
+# id	select_type	table	partitions	type	possible_keys	key				key_len	ref	rows	filtered	Extra
+# 1		SIMPLE		shtat				range	shtat_position	shtat_position	603			1		100.00		Using index condition
+
+
+EXPLAIN SELECT * FROM `shtat` WHERE `zp` < 100000;
+# id	select_type	table	partitions	type	possible_keys	key		key_len		ref		rows	filtered	Extra
+# 1		SIMPLE		shtat				ALL													10		33.33		Using where
+CREATE INDEX `shtat_zp` ON `shtat`(`zp`);
+EXPLAIN SELECT * FROM `shtat` WHERE `zp` < 100000;
+# id	select_type	table	partitions	type	possible_keys	key			key_len		ref		rows	filtered	Extra
+# 1		SIMPLE		shtat				range	shtat_zp		shtat_zp	4					3		100.00		Using index condition
