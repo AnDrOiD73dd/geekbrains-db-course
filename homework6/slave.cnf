@@ -1,0 +1,13 @@
+[mysqld]
+
+# id сервера в рамках одного кластера строго уникален
+server-id = 2
+
+# bin log (имя файла как на мастере)
+log_bin = bin.log 
+
+# базы для репликации (точно такие же как на мастере)
+binlog_do_db = lesson3
+
+# relay log (имя файла произвольное)
+relay-log = /var/log/mysql/relay.log

@@ -1,0 +1,9 @@
+[mysqld]
+
+# id сервера в рамках одного кластера строго уникален
+server-id = 1
+
+# bin log (имя файла произвольное)
+log_bin = /var/log/mysql/bin.log
+
+binlog_do_db = lesson3

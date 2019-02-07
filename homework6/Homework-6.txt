@@ -1,0 +1,386 @@
+
+# MASTER
+mysql> GRANT REPLICATION SLAVE ON *.* TO 'root'@'%';
+Query OK, 0 rows affected (0,00 sec)
+mysql> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0,00 sec)
+mysql> SHOW MASTER STATUS;
++--------------+----------+------------------+------------------+-------------------+
+| File         | Position | Binlog_Do_DB     | Binlog_Ignore_DB | Executed_Gtid_Set |
++--------------+----------+------------------+------------------+-------------------+
+| bin.000022   |      155 | lesson1			 |                  |                   |
++--------------+----------+------------------+------------------+-------------------+
+1 row in set (0,00 sec)
+
+root@MySQL8:~# mysql -u root -p123123 lesson3 > lesson3_dump20190207.sql
+
+# SLAVE
+root@MySQL8:~# mysql -u root -p123123 lesson3 < lesson3_dump20190207.sql
+
+mysql> STOP SLAVE;
+Query OK, 0 rows affected, 1 warning (0,00 sec)
+
+mysql> RESET SLAVE;
+Query OK, 0 rows affected (0,07 sec)
+
+mysql> CHANGE MASTER TO MASTER_HOST='192.168.1.67', MASTER_USER='root', MASTER_PASSWORD='123123', MASTER_LOG_FILE='bin.000022', MASTER_LOG_POS=155;
+Query OK, 0 rows affected, 2 warnings (0,09 sec)
+
+mysql> SHOW SLAVE STATUS \G
+*************************** 1. row ***************************
+               Slave_IO_State: Waiting for master to send event
+                  Master_Host: 192.168.1.67
+                  Master_User: root
+                  Master_Port: 3306
+                Connect_Retry: 60
+              Master_Log_File: bin.000022
+          Read_Master_Log_Pos: 155
+               Relay_Log_File: relay.000002
+                Relay_Log_Pos: 316
+        Relay_Master_Log_File: bin.000022
+             Slave_IO_Running: Yes
+            Slave_SQL_Running: Yes
+              Replicate_Do_DB: 
+          Replicate_Ignore_DB: 
+           Replicate_Do_Table: 
+       Replicate_Ignore_Table: 
+      Replicate_Wild_Do_Table: 
+  Replicate_Wild_Ignore_Table: 
+                   Last_Errno: 0
+                   Last_Error: 
+                 Skip_Counter: 0
+          Exec_Master_Log_Pos: 155
+              Relay_Log_Space: 514
+              Until_Condition: None
+               Until_Log_File: 
+                Until_Log_Pos: 0
+           Master_SSL_Allowed: No
+           Master_SSL_CA_File: 
+           Master_SSL_CA_Path: 
+              Master_SSL_Cert: 
+            Master_SSL_Cipher: 
+               Master_SSL_Key: 
+        Seconds_Behind_Master: 0
+Master_SSL_Verify_Server_Cert: No
+                Last_IO_Errno: 0
+                Last_IO_Error: 
+               Last_SQL_Errno: 0
+               Last_SQL_Error: 
+  Replicate_Ignore_Server_Ids: 
+             Master_Server_Id: 1
+                  Master_UUID: 3a90a3b6-f1ab-11e8-8365-080027ad0e39
+             Master_Info_File: mysql.slave_master_info
+                    SQL_Delay: 0
+          SQL_Remaining_Delay: NULL
+      Slave_SQL_Running_State: Slave has read all relay log; waiting for more updates
+           Master_Retry_Count: 86400
+                  Master_Bind: 
+      Last_IO_Error_Timestamp: 
+     Last_SQL_Error_Timestamp: 
+               Master_SSL_Crl: 
+           Master_SSL_Crlpath: 
+           Retrieved_Gtid_Set: 
+            Executed_Gtid_Set: 
+                Auto_Position: 0
+         Replicate_Rewrite_DB: 
+                 Channel_Name: 
+           Master_TLS_Version: 
+       Master_public_key_path: 
+        Get_master_public_key: 0
+1 row in set (0,00 sec)
+
+
+# MASTER
+mysql> use lesson3;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SELECT * FROM `salaries`;
++----+--------+--------+------------+------------+
+| id | emp_id | salary | from_date  | to_date    |
++----+--------+--------+------------+------------+
+| 32 |      1 |  60117 | 1986-06-26 | 1987-06-26 |
+| 33 |      1 |  62102 | 1987-06-26 | 1988-06-25 |
+| 34 |      1 |  66074 | 1988-06-25 | 1989-06-25 |
+| 35 |      1 |  66596 | 1989-06-25 | 1990-06-25 |
+| 36 |      1 |  66961 | 1990-06-25 | 1991-06-25 |
+| 37 |      1 |  71046 | 1991-06-25 | 1992-06-24 |
+| 38 |      1 |  74333 | 1992-06-24 | 1993-06-24 |
+| 39 |      1 |  75286 | 1993-06-24 | 1994-06-24 |
+| 40 |      1 |  75994 | 1994-06-24 | 1995-06-24 |
+| 41 |      1 |  76884 | 1995-06-24 | 1996-06-23 |
+| 42 |      1 |  80013 | 1996-06-23 | 1997-06-23 |
+| 43 |      1 |  81025 | 1997-06-23 | 1998-06-23 |
+| 44 |      1 |  81097 | 1998-06-23 | 1999-06-23 |
+| 45 |      1 |  84917 | 1999-06-23 | 2000-06-22 |
+| 46 |      1 |  85112 | 2000-06-22 | 2001-06-22 |
+| 47 |      1 |  85097 | 2001-06-22 | 2002-06-22 |
+| 48 |      1 |  88958 | 2002-06-22 | 9999-01-01 |
+| 49 |      2 |  65828 | 1996-08-03 | 1997-08-03 |
+| 50 |      2 |  65909 | 1997-08-03 | 1998-08-03 |
+| 51 |      2 |  67534 | 1998-08-03 | 1999-08-03 |
+| 52 |      2 |  69366 | 1999-08-03 | 2000-08-02 |
+| 53 |      2 |  71963 | 2000-08-02 | 2001-08-02 |
+| 54 |      2 |  72527 | 2001-08-02 | 9999-01-01 |
+| 55 |      3 |  40006 | 1995-12-03 | 1996-12-02 |
+| 56 |      3 |  43616 | 1996-12-02 | 1997-12-02 |
+| 57 |      3 |  43466 | 1997-12-02 | 1998-12-02 |
+| 58 |      3 |  43636 | 1998-12-02 | 1999-12-02 |
+| 59 |      3 |  43478 | 1999-12-02 | 2000-12-01 |
+| 60 |      3 |  43699 | 2000-12-01 | 2001-12-01 |
+| 61 |      3 |  43311 | 2001-12-01 | 9999-01-01 |
+| 62 |      4 |  40054 | 1986-12-01 | 1987-12-01 |
+| 63 |     11 | 120000 | 2019-01-31 | 2019-01-31 |
+| 64 |      7 |  10500 | 2019-02-04 | 2019-02-04 |
++----+--------+--------+------------+------------+
+33 rows in set (0,00 sec)
+
+mysql> INSERT INTO `salaries` (`emp_id`, `salary`, `from_date`, `to_date`) VALUES (6,132123,'2006-06-16','2007-06-16');
+Query OK, 1 row affected (0,11 sec)
+
+mysql> SELECT * FROM `salaries`;
++----+--------+--------+------------+------------+
+| id | emp_id | salary | from_date  | to_date    |
++----+--------+--------+------------+------------+
+| 32 |      1 |  60117 | 1986-06-26 | 1987-06-26 |
+| 33 |      1 |  62102 | 1987-06-26 | 1988-06-25 |
+| 34 |      1 |  66074 | 1988-06-25 | 1989-06-25 |
+| 35 |      1 |  66596 | 1989-06-25 | 1990-06-25 |
+| 36 |      1 |  66961 | 1990-06-25 | 1991-06-25 |
+| 37 |      1 |  71046 | 1991-06-25 | 1992-06-24 |
+| 38 |      1 |  74333 | 1992-06-24 | 1993-06-24 |
+| 39 |      1 |  75286 | 1993-06-24 | 1994-06-24 |
+| 40 |      1 |  75994 | 1994-06-24 | 1995-06-24 |
+| 41 |      1 |  76884 | 1995-06-24 | 1996-06-23 |
+| 42 |      1 |  80013 | 1996-06-23 | 1997-06-23 |
+| 43 |      1 |  81025 | 1997-06-23 | 1998-06-23 |
+| 44 |      1 |  81097 | 1998-06-23 | 1999-06-23 |
+| 45 |      1 |  84917 | 1999-06-23 | 2000-06-22 |
+| 46 |      1 |  85112 | 2000-06-22 | 2001-06-22 |
+| 47 |      1 |  85097 | 2001-06-22 | 2002-06-22 |
+| 48 |      1 |  88958 | 2002-06-22 | 9999-01-01 |
+| 49 |      2 |  65828 | 1996-08-03 | 1997-08-03 |
+| 50 |      2 |  65909 | 1997-08-03 | 1998-08-03 |
+| 51 |      2 |  67534 | 1998-08-03 | 1999-08-03 |
+| 52 |      2 |  69366 | 1999-08-03 | 2000-08-02 |
+| 53 |      2 |  71963 | 2000-08-02 | 2001-08-02 |
+| 54 |      2 |  72527 | 2001-08-02 | 9999-01-01 |
+| 55 |      3 |  40006 | 1995-12-03 | 1996-12-02 |
+| 56 |      3 |  43616 | 1996-12-02 | 1997-12-02 |
+| 57 |      3 |  43466 | 1997-12-02 | 1998-12-02 |
+| 58 |      3 |  43636 | 1998-12-02 | 1999-12-02 |
+| 59 |      3 |  43478 | 1999-12-02 | 2000-12-01 |
+| 60 |      3 |  43699 | 2000-12-01 | 2001-12-01 |
+| 61 |      3 |  43311 | 2001-12-01 | 9999-01-01 |
+| 62 |      4 |  40054 | 1986-12-01 | 1987-12-01 |
+| 63 |     11 | 120000 | 2019-01-31 | 2019-01-31 |
+| 64 |      7 |  10500 | 2019-02-04 | 2019-02-04 |
+| 65 |      6 | 132123 | 2006-06-16 | 2007-06-16 |
++----+--------+--------+------------+------------+
+34 rows in set (0,00 sec)
+
+mysql> 
+
+
+# SLAVE
+mysql> use lesson3;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SELECT * from `salaries`;
++----+--------+--------+------------+------------+
+| id | emp_id | salary | from_date  | to_date    |
++----+--------+--------+------------+------------+
+| 32 |      1 |  60117 | 1986-06-26 | 1987-06-26 |
+| 33 |      1 |  62102 | 1987-06-26 | 1988-06-25 |
+| 34 |      1 |  66074 | 1988-06-25 | 1989-06-25 |
+| 35 |      1 |  66596 | 1989-06-25 | 1990-06-25 |
+| 36 |      1 |  66961 | 1990-06-25 | 1991-06-25 |
+| 37 |      1 |  71046 | 1991-06-25 | 1992-06-24 |
+| 38 |      1 |  74333 | 1992-06-24 | 1993-06-24 |
+| 39 |      1 |  75286 | 1993-06-24 | 1994-06-24 |
+| 40 |      1 |  75994 | 1994-06-24 | 1995-06-24 |
+| 41 |      1 |  76884 | 1995-06-24 | 1996-06-23 |
+| 42 |      1 |  80013 | 1996-06-23 | 1997-06-23 |
+| 43 |      1 |  81025 | 1997-06-23 | 1998-06-23 |
+| 44 |      1 |  81097 | 1998-06-23 | 1999-06-23 |
+| 45 |      1 |  84917 | 1999-06-23 | 2000-06-22 |
+| 46 |      1 |  85112 | 2000-06-22 | 2001-06-22 |
+| 47 |      1 |  85097 | 2001-06-22 | 2002-06-22 |
+| 48 |      1 |  88958 | 2002-06-22 | 9999-01-01 |
+| 49 |      2 |  65828 | 1996-08-03 | 1997-08-03 |
+| 50 |      2 |  65909 | 1997-08-03 | 1998-08-03 |
+| 51 |      2 |  67534 | 1998-08-03 | 1999-08-03 |
+| 52 |      2 |  69366 | 1999-08-03 | 2000-08-02 |
+| 53 |      2 |  71963 | 2000-08-02 | 2001-08-02 |
+| 54 |      2 |  72527 | 2001-08-02 | 9999-01-01 |
+| 55 |      3 |  40006 | 1995-12-03 | 1996-12-02 |
+| 56 |      3 |  43616 | 1996-12-02 | 1997-12-02 |
+| 57 |      3 |  43466 | 1997-12-02 | 1998-12-02 |
+| 58 |      3 |  43636 | 1998-12-02 | 1999-12-02 |
+| 59 |      3 |  43478 | 1999-12-02 | 2000-12-01 |
+| 60 |      3 |  43699 | 2000-12-01 | 2001-12-01 |
+| 61 |      3 |  43311 | 2001-12-01 | 9999-01-01 |
+| 62 |      4 |  40054 | 1986-12-01 | 1987-12-01 |
+| 63 |     11 | 120000 | 2019-01-31 | 2019-01-31 |
+| 64 |      7 |  10500 | 2019-02-04 | 2019-02-04 |
++----+--------+--------+------------+------------+
+33 rows in set (0,00 sec)
+
+mysql> SELECT * from `salaries`;
++----+--------+--------+------------+------------+
+| id | emp_id | salary | from_date  | to_date    |
++----+--------+--------+------------+------------+
+| 32 |      1 |  60117 | 1986-06-26 | 1987-06-26 |
+| 33 |      1 |  62102 | 1987-06-26 | 1988-06-25 |
+| 34 |      1 |  66074 | 1988-06-25 | 1989-06-25 |
+| 35 |      1 |  66596 | 1989-06-25 | 1990-06-25 |
+| 36 |      1 |  66961 | 1990-06-25 | 1991-06-25 |
+| 37 |      1 |  71046 | 1991-06-25 | 1992-06-24 |
+| 38 |      1 |  74333 | 1992-06-24 | 1993-06-24 |
+| 39 |      1 |  75286 | 1993-06-24 | 1994-06-24 |
+| 40 |      1 |  75994 | 1994-06-24 | 1995-06-24 |
+| 41 |      1 |  76884 | 1995-06-24 | 1996-06-23 |
+| 42 |      1 |  80013 | 1996-06-23 | 1997-06-23 |
+| 43 |      1 |  81025 | 1997-06-23 | 1998-06-23 |
+| 44 |      1 |  81097 | 1998-06-23 | 1999-06-23 |
+| 45 |      1 |  84917 | 1999-06-23 | 2000-06-22 |
+| 46 |      1 |  85112 | 2000-06-22 | 2001-06-22 |
+| 47 |      1 |  85097 | 2001-06-22 | 2002-06-22 |
+| 48 |      1 |  88958 | 2002-06-22 | 9999-01-01 |
+| 49 |      2 |  65828 | 1996-08-03 | 1997-08-03 |
+| 50 |      2 |  65909 | 1997-08-03 | 1998-08-03 |
+| 51 |      2 |  67534 | 1998-08-03 | 1999-08-03 |
+| 52 |      2 |  69366 | 1999-08-03 | 2000-08-02 |
+| 53 |      2 |  71963 | 2000-08-02 | 2001-08-02 |
+| 54 |      2 |  72527 | 2001-08-02 | 9999-01-01 |
+| 55 |      3 |  40006 | 1995-12-03 | 1996-12-02 |
+| 56 |      3 |  43616 | 1996-12-02 | 1997-12-02 |
+| 57 |      3 |  43466 | 1997-12-02 | 1998-12-02 |
+| 58 |      3 |  43636 | 1998-12-02 | 1999-12-02 |
+| 59 |      3 |  43478 | 1999-12-02 | 2000-12-01 |
+| 60 |      3 |  43699 | 2000-12-01 | 2001-12-01 |
+| 61 |      3 |  43311 | 2001-12-01 | 9999-01-01 |
+| 62 |      4 |  40054 | 1986-12-01 | 1987-12-01 |
+| 63 |     11 | 120000 | 2019-01-31 | 2019-01-31 |
+| 64 |      7 |  10500 | 2019-02-04 | 2019-02-04 |
+| 65 |      6 | 132123 | 2006-06-16 | 2007-06-16 |
++----+--------+--------+------------+------------+
+34 rows in set (0,01 sec)
+# Запись успешно добавлена на SLAVE сервер
+
+# MASTER
+mysql> TRUNCATE `salaries`;
+Query OK, 0 rows affected (0,10 sec)
+
+# SLAVE
+mysql> SELECT * from `salaries`;
+Empty set (0,00 sec)
+# Таблица успешно очищена на SLAVE сервере
+
+--- MongoDB
+> use shtat;
+switched to db shtat
+> db.shtat.insert({"id":1, "name":"Evgeny", "lastname":"Uleikin", "otdel":1, "zp":200000, "position":"CTO"})
+WriteResult({ "nInserted" : 1 })
+> db.shtat.find()
+{ "_id" : ObjectId("5c5b79fa518433e191278112"), "id" : 1, "name" : "Evgeny", "lastname" : "Uleikin", "otdel" : 1, "zp" : 200000, "position" : "CTO" }
+> db.shtat.remove({"name":"Evgeny"})
+WriteResult({ "nRemoved" : 1 })
+> db.shtat.find()
+> db.shtat.insert({"name":"Evgeny", "lastname":"Uleikin", "otdel":1, "zp":200000, "position":"CTO"})
+WriteResult({ "nInserted" : 1 })
+> db.shtat.find()
+{ "_id" : ObjectId("5c5b7a94518433e191278113"), "name" : "Evgeny", "lastname" : "Uleikin", "otdel" : 1, "zp" : 200000, "position" : "CTO" }
+> db.shtat.insert({"name":"Андрей", "lastname":"Боголюбов", "otdel":1, "zp":108100, "position":"Event manager"})
+WriteResult({ "nInserted" : 1 })
+> db.shtat.insert({"name":"Василий", "lastname":"Теркин", "otdel":1, "zp":60000, "position":"Junior QA"})
+WriteResult({ "nInserted" : 1 })
+> db.shtat.insert({"name":"Борис", "lastname":"Кошкин", "otdel":1, "zp":55000, "position":"PR"})
+WriteResult({ "nInserted" : 1 })
+> db.shtat.insert({"name":"Дмитрий", "lastname":"Михайлов", "otdel":2, "zp":120000, "position":"QA"})
+WriteResult({ "nInserted" : 1 })
+> db.shtat.insert({"name":"Алексей", "lastname":"Хитров", "otdel":4, "zp":170000, "position":"Project manager"})
+WriteResult({ "nInserted" : 1 })
+> db.shtat.find()
+{ "_id" : ObjectId("5c5b7a94518433e191278113"), "name" : "Evgeny", "lastname" : "Uleikin", "otdel" : 1, "zp" : 200000, "position" : "CTO" }
+{ "_id" : ObjectId("5c5b7aff518433e191278114"), "name" : "Андрей", "lastname" : "Боголюбов", "otdel" : 1, "zp" : 108100, "position" : "Event manager" }
+{ "_id" : ObjectId("5c5b7b33518433e191278115"), "name" : "Василий", "lastname" : "Теркин", "otdel" : 1, "zp" : 60000, "position" : "Junior QA" }
+{ "_id" : ObjectId("5c5b7b68518433e191278116"), "name" : "Борис", "lastname" : "Кошкин", "otdel" : 1, "zp" : 55000, "position" : "PR" }
+{ "_id" : ObjectId("5c5b7b8a518433e191278117"), "name" : "Дмитрий", "lastname" : "Михайлов", "otdel" : 2, "zp" : 120000, "position" : "QA" }
+{ "_id" : ObjectId("5c5b7bb8518433e191278118"), "name" : "Алексей", "lastname" : "Хитров", "otdel" : 4, "zp" : 170000, "position" : "Project manager" }
+> db.shtat.find({"zp":{$gt:110000}})
+{ "_id" : ObjectId("5c5b7a94518433e191278113"), "name" : "Evgeny", "lastname" : "Uleikin", "otdel" : 1, "zp" : 200000, "position" : "CTO" }
+{ "_id" : ObjectId("5c5b7b8a518433e191278117"), "name" : "Дмитрий", "lastname" : "Михайлов", "otdel" : 2, "zp" : 120000, "position" : "QA" }
+{ "_id" : ObjectId("5c5b7bb8518433e191278118"), "name" : "Алексей", "lastname" : "Хитров", "otdel" : 4, "zp" : 170000, "position" : "Project manager" }
+> db.shtat.find({"name":{$regex:"e"}})
+{ "_id" : ObjectId("5c5b7a94518433e191278113"), "name" : "Evgeny", "lastname" : "Uleikin", "otdel" : 1, "zp" : 200000, "position" : "CTO" }
+> db.shtat.find({"name":{$regex:"а"}})
+{ "_id" : ObjectId("5c5b7b33518433e191278115"), "name" : "Василий", "lastname" : "Теркин", "otdel" : 1, "zp" : 60000, "position" : "Junior QA" }
+> db.shtat.find({"name":{$regex:"Вас"}})
+{ "_id" : ObjectId("5c5b7b33518433e191278115"), "name" : "Василий", "lastname" : "Теркин", "otdel" : 1, "zp" : 60000, "position" : "Junior QA" }
+> db.shtat.find({"name":{$regex:"Бор"}})
+{ "_id" : ObjectId("5c5b7b68518433e191278116"), "name" : "Борис", "lastname" : "Кошкин", "otdel" : 1, "zp" : 55000, "position" : "PR" }
+> db.shtat.find({"name":{$regex:"бор"}})
+> db.shtat.find({"zp":{$lt:110000}})
+{ "_id" : ObjectId("5c5b7aff518433e191278114"), "name" : "Андрей", "lastname" : "Боголюбов", "otdel" : 1, "zp" : 108100, "position" : "Event manager" }
+{ "_id" : ObjectId("5c5b7b33518433e191278115"), "name" : "Василий", "lastname" : "Теркин", "otdel" : 1, "zp" : 60000, "position" : "Junior QA" }
+{ "_id" : ObjectId("5c5b7b68518433e191278116"), "name" : "Борис", "lastname" : "Кошкин", "otdel" : 1, "zp" : 55000, "position" : "PR" }
+
+> db.shtat.update({"lastname":"Кошкин"},{$set:{"zp":59777}})
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+> db.shtat.find({"lastname":"Кошкин"})
+{ "_id" : ObjectId("5c5b7b68518433e191278116"), "name" : "Борис", "lastname" : "Кошкин", "otdel" : 1, "zp" : 59777, "position" : "PR" }
+
+> db.shtat.find().pretty()
+{
+	"_id" : ObjectId("5c5b7a94518433e191278113"),
+	"name" : "Evgeny",
+	"lastname" : "Uleikin",
+	"otdel" : 1,
+	"zp" : 200000,
+	"position" : "CTO"
+}
+{
+	"_id" : ObjectId("5c5b7aff518433e191278114"),
+	"name" : "Андрей",
+	"lastname" : "Боголюбов",
+	"otdel" : 1,
+	"zp" : 108100,
+	"position" : "Event manager"
+}
+{
+	"_id" : ObjectId("5c5b7b33518433e191278115"),
+	"name" : "Василий",
+	"lastname" : "Теркин",
+	"otdel" : 1,
+	"zp" : 60000,
+	"position" : "Junior QA"
+}
+{
+	"_id" : ObjectId("5c5b7b68518433e191278116"),
+	"name" : "Борис",
+	"lastname" : "Кошкин",
+	"otdel" : 1,
+	"zp" : 59777,
+	"position" : "PR"
+}
+{
+	"_id" : ObjectId("5c5b7b8a518433e191278117"),
+	"name" : "Дмитрий",
+	"lastname" : "Михайлов",
+	"otdel" : 2,
+	"zp" : 120000,
+	"position" : "QA"
+}
+{
+	"_id" : ObjectId("5c5b7bb8518433e191278118"),
+	"name" : "Алексей",
+	"lastname" : "Хитров",
+	"otdel" : 4,
+	"zp" : 170000,
+	"position" : "Project manager"
+}
+
