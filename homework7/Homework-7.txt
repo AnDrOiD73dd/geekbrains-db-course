@@ -1,0 +1,225 @@
+
+--------------------------------------------------------------------------------------------
+# Создаем пользователя с полными правами
+root@MySQL8:~# mysql -u root -p123123
+
+mysql> CREATE USER IF NOT EXISTS 'hw7'@'%' IDENTIFIED WITH mysql_native_password BY '123123';
+Query OK, 0 rows affected (0,04 sec)
+
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'hw7'@'%' WITH GRANT OPTION;
+Query OK, 0 rows affected (0,08 sec)
+
+mysql> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0,00 sec)
+
+mysql> exit
+Bye
+
+--------------------------------------------------------------------------------------------
+# Проверяем права созданного пользователя
+root@MySQL8:~# mysql -u hw7 -p123123
+
+mysql> show DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| lesson1            |
+| lesson3            |
+| mysql              |
+| performance_schema |
+| phpmyadmin         |
+| sys                |
++--------------------+
+7 rows in set (0,00 sec)
+
+mysql>  use lesson3;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SELECT * FROM `shtat`;
++----+--------------------+--------------------------+-------+--------+--------------------+
+| id | name               | lastname                 | otdel | zp     | position           |
++----+--------------------+--------------------------+-------+--------+--------------------+
+|  1 | Андрей             | Боголюбов                |     1 | 108100 | Event manager      |
+|  2 | Василий            | Теркин                   |     1 |  60000 | Junior QA          |
+|  3 | Борис              | Кошкин                   |     1 |  55000 | PR                 |
+|  4 | Дмитрий            | Михайлов                 |     2 | 120000 | QA                 |
+|  5 | Алексей            | Хитров                   |     4 | 170000 | Project manager    |
+|  6 | Станислав          | Бурчак                   |     4 | 146000 | Embedded developer |
+|  7 | Павел              | Рукавишников             |     4 |  70000 | Backend developer  |
+|  8 | Дмитрий            | Михеев                   |     4 | 160000 | Frontend developer |
+| 10 | Александр          | Дудь                     |     3 | 130000 | HR director        |
+| 11 | Владимир           | Капустин                 |     4 | 120000 | iOS developer      |
++----+--------------------+--------------------------+-------+--------+--------------------+
+10 rows in set (0,00 sec)
+
+
+mysql> exit
+Bye
+
+--------------------------------------------------------------------------------------------
+# Создаем еще одного пользователя с ограниченными правами
+root@MySQL8:~# mysql -u root -p123123
+
+mysql> CREATE USER IF NOT EXISTS 'hw_7'@'localhost' IDENTIFIED WITH mysql_native_password BY '123123' PASSWORD EXPIRE INTERVAL 90 DAY;
+Query OK, 0 rows affected (0,06 sec)
+
+mysql> GRANT SELECT, DELETE ON `lesson3`.`shtat` TO 'hw_7'@'localhost';
+Query OK, 0 rows affected (0,02 sec)
+
+mysql> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0,01 sec)
+
+mysql> exit
+Bye
+
+--------------------------------------------------------------------------------------------
+# Проверяем права у второго созданного пользователя
+root@MySQL8:~# mysql -u hw_7 -p123123
+
+mysql> SHOW SCHEMAS;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| lesson3            |
++--------------------+
+2 rows in set (0,00 sec)
+
+mysql> use lesson3;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SHOW TABLES;
++-------------------+
+| Tables_in_lesson3 |
++-------------------+
+| shtat             |
++-------------------+
+1 row in set (0,00 sec)
+
+mysql> SELECT * FROM `shtat`;
++----+--------------------+--------------------------+-------+--------+--------------------+
+| id | name               | lastname                 | otdel | zp     | position           |
++----+--------------------+--------------------------+-------+--------+--------------------+
+|  1 | Андрей             | Боголюбов                |     1 | 108100 | Event manager      |
+|  2 | Василий            | Теркин                   |     1 |  60000 | Junior QA          |
+|  3 | Борис              | Кошкин                   |     1 |  55000 | PR                 |
+|  4 | Дмитрий            | Михайлов                 |     2 | 120000 | QA                 |
+|  5 | Алексей            | Хитров                   |     4 | 170000 | Project manager    |
+|  6 | Станислав          | Бурчак                   |     4 | 146000 | Embedded developer |
+|  7 | Павел              | Рукавишников             |     4 |  70000 | Backend developer  |
+|  8 | Дмитрий            | Михеев                   |     4 | 160000 | Frontend developer |
+| 10 | Александр          | Дудь                     |     3 | 130000 | HR director        |
+| 11 | Владимир           | Капустин                 |     4 | 120000 | iOS developer      |
++----+--------------------+--------------------------+-------+--------+--------------------+
+10 rows in set (0,00 sec)
+
+mysql> SELECT * FROM `salaries`;
+ERROR 1142 (42000): SELECT command denied to user 'hw_7'@'localhost' for table 'salaries'
+mysql> SELECT * FROM `depart`;
+ERROR 1142 (42000): SELECT command denied to user 'hw_7'@'localhost' for table 'depart'
+mysql> SELECT * FROM `hz`;
+ERROR 1142 (42000): SELECT command denied to user 'hw_7'@'localhost' for table 'hz'
+mysql> INSERT INTO `shtat` VALUES ('Григорий', 'Петухов', 3, 132500, 'JAVA developer');
+ERROR 1142 (42000): INSERT command denied to user 'hw_7'@'localhost' for table 'shtat'
+mysql> DELETE FROM `shtat` WHERE `id` = 3;
+Query OK, 1 row affected (0,05 sec)
+
+mysql> SELECT * FROM `shtat`;
++----+--------------------+--------------------------+-------+--------+--------------------+
+| id | name               | lastname                 | otdel | zp     | position           |
++----+--------------------+--------------------------+-------+--------+--------------------+
+|  1 | Андрей             | Боголюбов                |     1 | 108100 | Event manager      |
+|  2 | Василий            | Теркин                   |     1 |  60000 | Junior QA          |
+|  4 | Дмитрий            | Михайлов                 |     2 | 120000 | QA                 |
+|  5 | Алексей            | Хитров                   |     4 | 170000 | Project manager    |
+|  6 | Станислав          | Бурчак                   |     4 | 146000 | Embedded developer |
+|  7 | Павел              | Рукавишников             |     4 |  70000 | Backend developer  |
+|  8 | Дмитрий            | Михеев                   |     4 | 160000 | Frontend developer |
+| 10 | Александр          | Дудь                     |     3 | 130000 | HR director        |
+| 11 | Владимир           | Капустин                 |     4 | 120000 | iOS developer      |
++----+--------------------+--------------------------+-------+--------+--------------------+
+9 rows in set (0,00 sec)
+
+mysql> exit
+Bye
+
+--------------------------------------------------------------------------------------------
+# Убираем права у второго созданного пользователя
+root@MySQL8:~# mysql -u hw7 -p123123
+
+mysql> REVOKE DELETE, SELECT ON *.* FROM 'hw_7'@'localhost';
+Query OK, 0 rows affected (0,00 sec)
+
+mysql> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0,00 sec)
+
+mysql> exit
+Bye
+--------------------------------------------------------------------------------------------
+# Проверяем что прав нет
+root@MySQL8:~# mysql -u hw_7 -p123123
+
+mysql> SELECT * FROM `shtat`;
+ERROR 1046 (3D000): No database selected
+mysql> use lesson3;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SELECT * FROM `shtat`;
++----+--------------------+--------------------------+-------+--------+--------------------+
+| id | name               | lastname                 | otdel | zp     | position           |
++----+--------------------+--------------------------+-------+--------+--------------------+
+|  1 | Андрей             | Боголюбов                |     1 | 108100 | Event manager      |
+|  2 | Василий            | Теркин                   |     1 |  60000 | Junior QA          |
+|  4 | Дмитрий            | Михайлов                 |     2 | 120000 | QA                 |
+|  5 | Алексей            | Хитров                   |     4 | 170000 | Project manager    |
+|  6 | Станислав          | Бурчак                   |     4 | 146000 | Embedded developer |
+|  7 | Павел              | Рукавишников             |     4 |  70000 | Backend developer  |
+|  8 | Дмитрий            | Михеев                   |     4 | 160000 | Frontend developer |
+| 10 | Александр          | Дудь                     |     3 | 130000 | HR director        |
+| 11 | Владимир           | Капустин                 |     4 | 120000 | iOS developer      |
++----+--------------------+--------------------------+-------+--------+--------------------+
+9 rows in set (0,00 sec)
+
+# Что-то пошло не так, права на SELECT есть. Перезагрузка сервера тоже не помогла. Хотя в mysql.users видно что прав на SELECT и DELETE нет.
+
+--------------------------------------------------------------------------------------------
+# Делаем бэкап
+
+root@MySQL8:~# mysqldump -u root -p123123 lesson3 --routines > lesson3_20190210.sql
+
+root@MySQL8:~# mysql -u root -p123123
+mysql> use lesson3;
+
+# Удаляем одну из таблиц
+mysql> DROP TABLE `salaries`;
+Query OK, 0 rows affected (0,04 sec)
+
+# Проверяем что таблицы нет
+mysql> SELECT * FROM `lesson3`.`salaries`;
+ERROR 1146 (42S02): Table 'lesson3.salaries' doesn't exist
+
+mysql> exit
+Bye
+
+# Восстанавливаем из бэкапа
+root@MySQL8:~# mysql -u root -p123123 lesson3 < lesson3_20190210.sql
+
+root@MySQL8:~# mysql -u root -p123123
+
+mysql> use lesson3;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+# Проверяем что удаленная таблица восстановлена
+mysql> SELECT * FROM `lesson3`.`salaries`;
+Empty set (0,00 sec)
+
